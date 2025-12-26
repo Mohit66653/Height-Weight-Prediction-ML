@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Height Predictor</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Glass Card */
+        .glass-card {
+            width: 420px;
+            padding: 30px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+            color: #fff;
+        }
+
+        .glass-card h2 {
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        /* Floating input */
+        .form-floating input {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: #fff;
+        }
+
+        .form-floating label {
+            color: #e0e0e0;
+        }
+
+        .form-floating input:focus {
+            box-shadow: none;
+            background: rgba(255, 255, 255, 0.25);
+            color: #fff;
+        }
+
+        /* Button */
+        .btn-custom {
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Result box */
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: 500;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .footer-text {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 13px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="glass-card">
+        <h2>Height Predictor</h2>
+
+        <form id="predictForm">
+            <div class="form-floating mb-3">
+                <input type="number" step="0.01" class="form-control" id="weight" placeholder="Weight" required>
+                <label for="weight">Weight (kg)</label>
+            </div>
+
+            <button type="submit" class="btn btn-custom w-100">
+                Predict Height
+            </button>
+        </form>
+
+        <div id="result"></div>
+
+        <div class="footer-text">
+            ML Linear Regression Model
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("predictForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const btn = document.querySelector(".btn-custom");
+            btn.textContent = "Predicting...";
+            btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append("weight", document.getElementById("weight").value);
+
+            fetch("/predict", {
+                method: "POST",
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    const resultDiv = document.getElementById("result");
+                    resultDiv.style.display = "block";
+
+                    if (data.height !== undefined) {
+                        resultDiv.style.background = "rgba(0,255,150,0.25)";
+                        resultDiv.textContent = `Predicted Height: ${data.height.toFixed(2)} cm`;
+                    } else {
+                        resultDiv.style.background = "rgba(255,0,0,0.25)";
+                        resultDiv.textContent = "Invalid input";
+                    }
+
+                    btn.textContent = "Predict Height";
+                    btn.disabled = false;
+                })
+                .catch(() => {
+                    alert("Server error");
+                    btn.textContent = "Predict Height";
+                    btn.disabled = false;
+                });
+        });
+    </script>
+
+</body>
+
+</html>
